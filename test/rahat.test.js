@@ -4,7 +4,7 @@ const RahatERC20 = artifacts.require("RahatERC20");
 const RahatTriggerResponse = artifacts.require("RahatTriggerResponse");
 const RahatAdmin = artifacts.require("RahatAdmin");
 
-describe("------ Multisig Trigger Tests ------", function () {
+describe.only("------ Rahat Tests ------", function () {
   let rahatERC20;
   let rahat;
   let rahatTrigger;
@@ -54,12 +54,13 @@ describe("------ Multisig Trigger Tests ------", function () {
   //      Test token redemption
   //--------------------------------------------------------
 
-  describe("Token activity", function () {
-    const phone1 = "111111111";
-    const phone1Hash = web3.utils.soliditySha3({
+  describe("Unbanked Beneficiary", function () {
+    const unbankedBeneficiary = "111111111";
+    const unbankedBeneficiaryHash = web3.utils.soliditySha3({
       type: "string",
-      value: phone1.toString(),
+      value: unbankedBeneficiary.toString(),
     });
+
     const otp = "9670";
     const otpHash = web3.utils.soliditySha3({ type: "string", value: otp });
 
@@ -71,12 +72,19 @@ describe("------ Multisig Trigger Tests ------", function () {
       assert.equal(projecBalance.toNumber(), 10000);
     });
 
-    it("should issue token to beneficiary", async function () {
-      await rahat.issueERC20ToBeneficiary(projectId, phone1, 1000, {
-        from: admin1,
-      });
-      const erc20BalanceOfPhone1 = await rahat.erc20Balance(phone1);
-      assert.equal(erc20BalanceOfPhone1, 1000);
+    it("should issue token to unbanked beneficiary", async function () {
+      await rahat.issueERC20ToBeneficiary(
+        projectId,
+        unbankedBeneficiary,
+        1000,
+        {
+          from: admin1,
+        }
+      );
+      const erc20BalanceOfUnbankedBeneficiary = await rahat.erc20Balance(
+        unbankedBeneficiary
+      );
+      assert.equal(erc20BalanceOfUnbankedBeneficiary, 1000);
     });
 
     it("should add vendor and server roles", async function () {
@@ -86,7 +94,9 @@ describe("------ Multisig Trigger Tests ------", function () {
 
     it("should fail since response is not live yet", async function () {
       exceptions.tryCatch(
-        rahat.createERC20Claim(phone1, 1000, { from: vendor })
+        rahat.createERC20Claim(unbankedBeneficiary, 1000, {
+          from: vendor,
+        })
       );
     });
 
@@ -96,30 +106,74 @@ describe("------ Multisig Trigger Tests ------", function () {
     });
 
     it("should create erc20 token claim from vendor to beneficiary", async function () {
-      await rahat.createERC20Claim(phone1, 1000, { from: vendor });
-      const claim = await rahat.recentERC20Claims(vendor, phone1Hash);
+      await rahat.createERC20Claim(unbankedBeneficiary, 1000, { from: vendor });
+      const claim = await rahat.recentERC20Claims(
+        vendor,
+        unbankedBeneficiaryHash
+      );
       assert.equal(claim.amount, 1000);
       assert.equal(claim.isReleased, false);
     });
 
     it("should approve erc20 token claim by server account", async function () {
-      await rahat.approveERC20Claim(vendor, phone1, otpHash, 2000, {
-        from: server,
-      });
+      await rahat.approveERC20Claim(
+        vendor,
+        unbankedBeneficiary,
+        otpHash,
+        2000,
+        {
+          from: server,
+        }
+      );
 
-      const claim = await rahat.recentERC20Claims(vendor, phone1Hash);
+      const claim = await rahat.recentERC20Claims(
+        vendor,
+        unbankedBeneficiaryHash
+      );
       assert.equal(claim.amount, 1000);
       assert.equal(claim.isReleased, true);
     });
 
     it("should get erc20 tokens from claim made after entering otp set by server", async function () {
-      await rahat.getERC20FromClaim(phone1, otp, { from: vendor });
+      await rahat.getERC20FromClaim(unbankedBeneficiary, otp, { from: vendor });
 
-      const claim = await rahat.recentERC20Claims(vendor, phone1Hash);
+      const claim = await rahat.recentERC20Claims(
+        vendor,
+        unbankedBeneficiaryHash
+      );
       assert.equal(claim.amount, 0);
       assert.equal(claim.isReleased, false);
       const vendorBalance = await rahatERC20.balanceOf(vendor);
       assert.equal(vendorBalance.toNumber(), 1000);
+    });
+  });
+
+  describe("Unbanked Beneficiary", function () {
+    const bankedBeneficiary = "222222";
+    const bankedBeneficiaryHash = web3.utils.soliditySha3({
+      type: "string",
+      value: bankedBeneficiary.toString(),
+    });
+
+    const otp = "9670";
+    const otpHash = web3.utils.soliditySha3({ type: "string", value: otp });
+
+    it("should issue token to banked beneficiary", async function () {
+      await rahat.setAsBankedBeneficiary(bankedBeneficiary, true);
+      assert.equal(await rahat.isBanked(bankedBeneficiary), true);
+      await rahat.issueERC20ToBeneficiary(projectId, bankedBeneficiary, 1000, {
+        from: admin1,
+      });
+      const erc20BalanceOfBankedBeneficiary = await rahat.erc20Balance(
+        bankedBeneficiary
+      );
+      assert.equal(erc20BalanceOfBankedBeneficiary, 1000);
+    });
+
+    it("should create erc20 token claim from vendor to banked beneficiary", async function () {
+      exceptions.tryCatch(
+        rahat.createERC20Claim(bankedBeneficiary, 1000, { from: vendor })
+      );
     });
   });
   //--------------------------------------------------------

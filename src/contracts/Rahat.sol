@@ -69,10 +69,11 @@ contract Rahat is AccessControl, Multicall {
 
   ///@notice track total issued tokens of each benefiicary phone
   mapping(uint256 => uint256) public erc20Issued; //phone=>balance
-  mapping(uint256 => EnumerableSet.UintSet) beneficiaryTokenIds;
 
   /// @notice track balances of each beneficiary phone
   mapping(uint256 => uint256) public erc20Balance; //phone=>balance
+
+  mapping(uint256 => bool) public isBanked;
 
   /// @notice track projectBalances
   //bytes32[] public projectId;
@@ -98,7 +99,7 @@ contract Rahat is AccessControl, Multicall {
     RahatTriggerResponse _triggerResponse,
     address _admin
   ) {
-    _setupRole(DEFAULT_ADMIN_ROLE, tx.origin);
+    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     _setupRole(DEFAULT_ADMIN_ROLE, _admin);
     _setRoleAdmin(SERVER_ROLE, DEFAULT_ADMIN_ROLE);
     _setRoleAdmin(VENDOR_ROLE, DEFAULT_ADMIN_ROLE);
@@ -164,6 +165,10 @@ contract Rahat is AccessControl, Multicall {
     grantRole(DEFAULT_ADMIN_ROLE, _account);
   }
 
+  function isAdmin(address _account) external view returns(bool){
+    return hasRole(DEFAULT_ADMIN_ROLE, _account);
+  }
+
   /// @notice add server account for this contract
   /// @param _account address of the new server account
   function addServer(address _account) external OnlyAdmin {
@@ -174,6 +179,10 @@ contract Rahat is AccessControl, Multicall {
   /// @param _account address of the new vendor
   function addVendor(address _account) external OnlyAdmin {
     grantRole(VENDOR_ROLE, _account);
+  }
+
+  function isVendor(address _account) public view returns(bool){
+    return hasRole(VENDOR_ROLE, _account);
   }
 
   /// @notice add vendors
@@ -188,12 +197,14 @@ contract Rahat is AccessControl, Multicall {
     projectMobilizers[_id].add(_account);
   }
 
-  function getTokenIdsOfBeneficiary(uint256 _phone)
-    public
-    view
-    returns (uint256[] memory tokenIds)
+  /// @notice set IsBanked Beneficiary
+  /// @param _phone beneficiary phone number
+  /// @param _isBanked true/false
+  function setAsBankedBeneficiary(uint256 _phone, bool _isBanked)
+    external
+    OnlyAdmin
   {
-    return beneficiaryTokenIds[_phone].values();
+    isBanked[_phone] = _isBanked;
   }
 
   // function suspendMobilizer() public {}
@@ -314,6 +325,8 @@ contract Rahat is AccessControl, Multicall {
       triggerResponse.isLive(),
       "This response has not been activated yet, please contact admin."
     );
+    require(!isBanked[_phone], "Cannot claim from banked beneficiary");
+
     bytes32 _benId = findHash(_phone);
     require(
       erc20Balance[_phone] >= _tokens,
