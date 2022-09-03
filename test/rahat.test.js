@@ -81,10 +81,7 @@ describe.only("------ Rahat Tests ------", function () {
           from: admin1,
         }
       );
-      const erc20BalanceOfUnbankedBeneficiary = await rahat.erc20Balance(
-        unbankedBeneficiary
-      );
-      assert.equal(erc20BalanceOfUnbankedBeneficiary, 1000);
+      assert.equal(await rahat.erc20Balance(unbankedBeneficiary), 1000);
     });
 
     it("should add vendor and server roles", async function () {
@@ -150,13 +147,6 @@ describe.only("------ Rahat Tests ------", function () {
 
   describe("Unbanked Beneficiary", function () {
     const bankedBeneficiary = "222222";
-    const bankedBeneficiaryHash = web3.utils.soliditySha3({
-      type: "string",
-      value: bankedBeneficiary.toString(),
-    });
-
-    const otp = "9670";
-    const otpHash = web3.utils.soliditySha3({ type: "string", value: otp });
 
     it("should issue token to banked beneficiary", async function () {
       await rahat.setAsBankedBeneficiary(bankedBeneficiary, true);
@@ -164,10 +154,7 @@ describe.only("------ Rahat Tests ------", function () {
       await rahat.issueERC20ToBeneficiary(projectId, bankedBeneficiary, 1000, {
         from: admin1,
       });
-      const erc20BalanceOfBankedBeneficiary = await rahat.erc20Balance(
-        bankedBeneficiary
-      );
-      assert.equal(erc20BalanceOfBankedBeneficiary, 1000);
+      assert.equal(await rahat.erc20Balance(bankedBeneficiary), 1000);
     });
 
     it("should create erc20 token claim from vendor to banked beneficiary", async function () {
@@ -175,7 +162,15 @@ describe.only("------ Rahat Tests ------", function () {
         rahat.createERC20Claim(bankedBeneficiary, 1000, { from: vendor })
       );
     });
+
+    it("should transfer erc20 token banked beneficiary to vendor by admin", async function () {
+      await rahat.transferTokenToVendorByAdmin(bankedBeneficiary, vendor, 500);
+      assert.equal(await rahat.erc20Balance(bankedBeneficiary), 500);
+      const vendorBalance = await rahatERC20.balanceOf(vendor);
+      assert.equal(vendorBalance.toNumber(), 1500);
+    });
   });
+
   //--------------------------------------------------------
   describe("Deactivate Response", function () {
     it("should deactive response by admin", async function () {

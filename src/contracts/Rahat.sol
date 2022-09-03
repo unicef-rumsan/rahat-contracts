@@ -395,6 +395,17 @@ contract Rahat is AccessControl, Multicall {
     emit ClaimAcquiredERC20(msg.sender, _phone, amt);
   }
 
+  /// @notice Admin function to transfer beneficiary token to vendor
+  /// @param _phone Phone number of beneficiary to whom token is requested
+  /// @param _address vendor's address
+  /// @param _amount Number of tokens to request
+  function transferTokenToVendorByAdmin(uint256 _phone, address _address, uint256 _amount) 
+    public IsBeneficiary(_phone) OnlyAdmin {
+      require(isVendor(_address), "Transfer to must be vendor address");
+      adjustTokenDeduct(_phone, _amount);
+      erc20.transfer(_address, _amount);
+  }
+
   /// @notice generates the hash of the given string
   /// @param _data String of which hash is to be generated
   function findHash(string memory _data) public pure returns (bytes32) {
