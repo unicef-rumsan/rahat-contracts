@@ -27,6 +27,11 @@ contract RahatERC20 is ERC20, ERC20Snapshot, ERC20Burnable {
     _mint(msg.sender, 10000);
   }
 
+  ///@dev returns the decimals of the tokens
+  function decimals() public pure override returns(uint8){
+    return 0;
+  }
+
   ///@dev Mint x amount of ERC20 token to given address
   ///@param _address Address to which ERC20 token will be minted
   ///@param _amount Amount of token to be minted
