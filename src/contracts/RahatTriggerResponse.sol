@@ -33,13 +33,19 @@ contract RahatTriggerResponse {
     isAdmin[_adminAddress] = true;
   }
 
+   function listAdmins() public view returns (address[] memory) {
+    return _adminSet.values();
+  }
+
   function removeAdmin(address _adminAddress) public OnlyAdmin {
     _adminSet.remove(_adminAddress);
     isAdmin[_adminAddress] = false;
   }
 
-  function deactivateResponse() public OnlyAdmin {
-    isLive = false;
+  function deactivateResponse(string memory _projectId) public OnlyAdmin {
+    bytes32 _hash = keccak256(abi.encodePacked(_projectId));
+    adminConfirmations[_hash][msg.sender] = false;
+    isLive = this.isConfirmed(_hash);
   }
 
   function activateResponse(string memory _projectId) public OnlyAdmin {
