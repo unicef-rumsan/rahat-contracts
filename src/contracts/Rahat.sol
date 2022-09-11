@@ -224,7 +224,8 @@ contract Rahat is AccessControl, Multicall {
 
     uint256 _balance = erc20Balance[_phone];
     remainingProjectErc20Balances[_projectId] += _balance;
-    adjustTokenDeduct(_phone, _balance);
+    erc20Balance[_phone] = 0;
+    erc20Issued[_phone] = erc20Issued[_phone] - _balance;
   }
 
   /// @notice adds the token from beneficiary
@@ -404,6 +405,7 @@ contract Rahat is AccessControl, Multicall {
       require(isVendor(_address), "Transfer to must be vendor address");
       adjustTokenDeduct(_phone, _amount);
       erc20.transfer(_address, _amount);
+      emit ClaimAcquiredERC20(_address, _phone, _amount);
   }
 
   /// @notice generates the hash of the given string

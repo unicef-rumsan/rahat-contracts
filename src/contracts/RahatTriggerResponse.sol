@@ -6,6 +6,11 @@ import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 contract RahatTriggerResponse {
   using EnumerableSet for EnumerableSet.AddressSet;
 
+  event ResponseTriggered(
+    address indexed adminAddress,
+    bool isLive
+  );
+
   bool public isLive;
   uint128 public requiredConfirmations;
   mapping(bytes32 => mapping(address => bool)) public adminConfirmations; //TxHash > Admin > bool
@@ -46,13 +51,14 @@ contract RahatTriggerResponse {
     bytes32 _hash = keccak256(abi.encodePacked(_projectId));
     adminConfirmations[_hash][msg.sender] = false;
     isLive = this.isConfirmed(_hash);
+    emit ResponseTriggered(msg.sender, isLive);
   }
 
   function activateResponse(string memory _projectId) public OnlyAdmin {
     bytes32 _hash = keccak256(abi.encodePacked(_projectId));
     adminConfirmations[_hash][msg.sender] = true;
-    if (!this.isConfirmed(_hash)) return;
-    isLive = true;
+    isLive = this.isConfirmed(_hash);
+    emit ResponseTriggered(msg.sender, isLive);
   }
 
   function isConfirmed(bytes32 _hash) public view returns (bool _confirmed) {
