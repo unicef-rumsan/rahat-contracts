@@ -24,7 +24,6 @@ contract RahatERC20 is ERC20, ERC20Snapshot, ERC20Burnable {
   ) ERC20(_name, _symbol) {
     owner[msg.sender] = true;
     owner[_admin] = true;
-    _mint(msg.sender, 10000);
   }
 
   ///@dev returns the decimals of the tokens
