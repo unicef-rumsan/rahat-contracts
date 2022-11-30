@@ -4,7 +4,7 @@ const RahatERC20 = artifacts.require("RahatERC20");
 const RahatTriggerResponse = artifacts.require("RahatTriggerResponse");
 const RahatAdmin = artifacts.require("RahatAdmin");
 
-describe.only("------ Rahat Tests ------", function () {
+describe("------ Rahat Tests ------", function () {
   let rahatERC20;
   let rahat;
   let rahatTrigger;

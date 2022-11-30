@@ -7,12 +7,17 @@
 
 pragma solidity ^0.8.16;
 import "./RahatERC20.sol";
+import "./RahatRegistry.sol";
+import "./RahatWallet.sol";
 import "./RahatTriggerResponse.sol";
+import "../libraries/AbstractERC20Func.sol";
+
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@openzeppelin/contracts/utils/Multicall.sol";
 
-contract Rahat is AccessControl, Multicall {
+contract Rahat is AccessControl, AbstractERC20Func, Multicall {
   using Strings for uint256;
   using EnumerableSet for EnumerableSet.Bytes32Set;
   using EnumerableSet for EnumerableSet.AddressSet;
@@ -65,6 +70,8 @@ contract Rahat is AccessControl, Multicall {
   //***** Variables (State) *********//
   //AidToken public tokenContract;
   RahatERC20 public erc20;
+  RahatERC20 public cashToken;
+  RahatRegistry public registry;
   RahatTriggerResponse public triggerResponse;
 
   ///@notice track total issued tokens of each benefiicary phone
@@ -78,7 +85,8 @@ contract Rahat is AccessControl, Multicall {
   /// @notice track projectBalances
   //bytes32[] public projectId;
   EnumerableSet.Bytes32Set private projectId;
-  mapping(bytes32 => uint256) remainingProjectErc20Balances;
+  mapping(bytes32 => uint256) public totalProjectErc20Issued;
+  mapping(bytes32 => uint256) public remainingProjectErc20Balances;
   mapping(bytes32 => EnumerableSet.AddressSet) projectMobilizers;
   mapping(bytes32 => EnumerableSet.AddressSet) projectVendors;
 
@@ -96,6 +104,7 @@ contract Rahat is AccessControl, Multicall {
   //***** Constructor *********//
   constructor(
     RahatERC20 _erc20,
+    RahatRegistry _registry,
     RahatTriggerResponse _triggerResponse,
     address _admin
   ) {
@@ -105,7 +114,9 @@ contract Rahat is AccessControl, Multicall {
     _setRoleAdmin(VENDOR_ROLE, DEFAULT_ADMIN_ROLE);
     grantRole(SERVER_ROLE, msg.sender);
     erc20 = _erc20;
+    registry = _registry;
     triggerResponse = _triggerResponse;
+    owner[_admin] = true;
   }
 
   function supportsInterface(bytes4 interfaceId)
@@ -163,6 +174,7 @@ contract Rahat is AccessControl, Multicall {
   /// @param _account address of the new admin
   function addAdmin(address _account) external OnlyAdmin {
     grantRole(DEFAULT_ADMIN_ROLE, _account);
+    owner[_account] = true;
   }
 
   function isAdmin(address _account) external view returns(bool){
@@ -177,8 +189,20 @@ contract Rahat is AccessControl, Multicall {
 
   /// @notice add vendors
   /// @param _account address of the new vendor
-  function addVendor(address _account) external OnlyAdmin {
+  function addVendor(address _account) external OnlyAdmin returns (address) {
+    RahatWallet vWallet;
+    bytes32 idHash = findHash(_account);
+    address vWalletAddress = registry.id2Address(idHash);
+    if(vWalletAddress!=address(0)){
+      vWallet = RahatWallet(vWalletAddress);
+    }
+    else {
+      vWallet = new RahatWallet(address(this));
+      registry.addId2AddressMap(findHash(_account), address(vWallet));
+    } 
+    vWallet.addOwner(_account);
     grantRole(VENDOR_ROLE, _account);
+    return address(vWallet);
   }
 
   function isVendor(address _account) public view returns(bool){
@@ -254,6 +278,7 @@ contract Rahat is AccessControl, Multicall {
     external
   {
     remainingProjectErc20Balances[_projectId] += _projectCapital;
+    totalProjectErc20Issued[_projectId] += _projectCapital;
   }
 
   /// @notice get the current balance of project
@@ -293,17 +318,12 @@ contract Rahat is AccessControl, Multicall {
     string memory _projectId,
     uint256 _phone,
     uint256 _amount
-  ) public OnlyAdminOrMobilizer {
+  ) public OnlyAdmin {
     bytes32 _id = findHash(_projectId);
 
-    if (hasRole(MOBILIZER_ROLE, msg.sender)) {
-      require(
-        projectMobilizers[_id].contains(msg.sender),
-        "mobilizer is not onboarded to given project"
-      );
-    }
+    //check beneficiary in registry;
+    require(registry.exists(findHash(_phone)), "Beneficiary not registered.");
     erc20IssuedBy[msg.sender] += _amount;
-
     require(
       remainingProjectErc20Balances[_id] >= _amount,
       "RAHAT: Amount is greater than remaining Project Budget"
@@ -327,6 +347,8 @@ contract Rahat is AccessControl, Multicall {
       "This response has not been activated yet, please contact admin."
     );
     require(!isBanked[_phone], "Cannot claim from banked beneficiary");
+    
+    _verifyVendorCashBalance(msg.sender, _tokens);
 
     bytes32 _benId = findHash(_phone);
     require(
@@ -393,20 +415,56 @@ contract Rahat is AccessControl, Multicall {
     ac.amount = 0;
     ac.date = 0;
     erc20.transfer(msg.sender, amt);
+    _transferCashFromVendor(msg.sender, _phone, amt);
     emit ClaimAcquiredERC20(msg.sender, _phone, amt);
   }
 
   /// @notice Admin function to transfer beneficiary token to vendor
   /// @param _phone Phone number of beneficiary to whom token is requested
-  /// @param _address vendor's address
+  /// @param _vendorAddress vendor's address
   /// @param _amount Number of tokens to request
-  function transferTokenToVendorByAdmin(uint256 _phone, address _address, uint256 _amount) 
+  function transferTokenToVendorByAdmin(uint256 _phone, address _vendorAddress, uint256 _amount) 
     public IsBeneficiary(_phone) OnlyAdmin {
-      require(isVendor(_address), "Transfer to must be vendor address");
+      require(isVendor(_vendorAddress), "Transfer to must be vendor address");
       adjustTokenDeduct(_phone, _amount);
-      erc20.transfer(_address, _amount);
-      emit ClaimAcquiredERC20(_address, _phone, _amount);
+      _transferCashFromVendor(_vendorAddress, _phone, _amount);
+      erc20.transfer(_vendorAddress, _amount);
+      emit ClaimAcquiredERC20(_vendorAddress, _phone, _amount);
   }
+  
+  function transferCashToVendor(address _vendorAddress, uint _amount) public OnlyAdmin {
+    require(registry.exists(findHash(_vendorAddress)), "vendor wallet not registered.");
+    cashToken.approve(registry.id2Address(findHash(_vendorAddress)), _amount);
+  }
+
+  function _transferCashFromVendor(address _vendorAddress, uint256 _phone, uint _amount) private {
+    RahatWallet vendorWallet = RahatWallet(registry.id2Address(findHash(_vendorAddress)));
+    vendorWallet.transferToken(address(cashToken), registry.id2Address(findHash(_phone)), _amount);
+  }
+
+  function _verifyVendorCashBalance(address _vendorAddress, uint256 _amount) private view {
+    uint balance = cashToken.balanceOf(registry.id2Address(findHash(_vendorAddress)));
+    require(balance >= _amount, "Vendor does not have enough cash balance.");
+  } 
+
+  function claimTokenForProject(address _token, address _from, bytes32 _projectId, uint256 _amount) public OnlyOwner {
+    if(address(cashToken) == address(0)) cashToken = RahatERC20(_token);
+    claimToken(_token, _from, _amount);
+    remainingProjectErc20Balances[_projectId] += _amount;
+    totalProjectErc20Issued[_projectId] += _amount;
+  }
+
+  function vendorBalance(address _vendorAddress) public view returns (address walletAddress, uint cashBalance, uint tokenBalance) {
+    walletAddress = registry.id2Address(findHash(_vendorAddress));
+    cashBalance = cashToken.balanceOf(walletAddress);
+    tokenBalance = erc20.balanceOf(_vendorAddress);
+  } 
+
+  function beneficiaryBalance(uint _phone) public view returns (address walletAddress, uint cashBalance, uint tokenBalance) {
+    walletAddress = registry.id2Address(findHash(_phone));
+    cashBalance = cashToken.balanceOf(walletAddress);
+    tokenBalance = erc20Balance[_phone];
+  } 
 
   /// @notice generates the hash of the given string
   /// @param _data String of which hash is to be generated
@@ -415,9 +473,12 @@ contract Rahat is AccessControl, Multicall {
   }
 
   /// @notice generates the hash of the given string
-  /// @param _data String of which hash is to be generated
   function findHash(uint256 _data) public pure returns (bytes32) {
     return keccak256(abi.encodePacked(_data.toString()));
+  }
+
+  function findHash(address _data) public pure returns (bytes32) {
+    return keccak256(abi.encodePacked(_data));
   }
 
   /// @notice Generates the sum of all the integers in array
