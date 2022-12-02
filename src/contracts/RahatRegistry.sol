@@ -3,13 +3,12 @@
 pragma solidity ^0.8.16;
 
 import "../libraries/AbstractOwner.sol";
-import "@openzeppelin/contracts/utils/Multicall.sol";
 
 /// @title Donor contract to create tokens
 /// @author Rumsan Associates
 /// @notice You can use this contract to manage Rahat tokens and projects
 /// @dev All function calls are only executed by contract owner
-contract RahatRegistry is AbstractOwner, Multicall {
+contract RahatRegistry is AbstractOwner {
 
   mapping(bytes32=>address) public id2Address;
 
