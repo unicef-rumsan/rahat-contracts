@@ -68,22 +68,22 @@ describe.only("------ Rahat Donor Tests ------", function () {
     });
   });
 
-  describe.only("test", function () {
-    it("Create tracking tokens", async function () {
-      // const vAddr = "0x2e38580a0ea254895b3f28f3aa95221124c102df";
-      // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
-      // web3.eth.sendTransaction;
-      // await rahat.addVendor(vAddr, { from: palika });
-      // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
-      // console.log(web3.utils.fromWei(await web3.eth.getBalance(rahat.address)));
-      // await rahat.withdraw(vAddr, { from: palika });
-      // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
-      // console.log(web3.utils.fromWei(await web3.eth.getBalance(rahat.address)));
-      console.log(
-        await rahat.projectBalance(projectIdHash, rahatAdmin.address)
-      );
-    });
-  });
+  // describe.only("test", function () {
+  //   it("Create tracking tokens", async function () {
+  //     // const vAddr = "0x2e38580a0ea254895b3f28f3aa95221124c102df";
+  //     // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
+  //     // web3.eth.sendTransaction;
+  //     // await rahat.addVendor(vAddr, { from: palika });
+  //     // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
+  //     // console.log(web3.utils.fromWei(await web3.eth.getBalance(rahat.address)));
+  //     // await rahat.withdraw(vAddr, { from: palika });
+  //     // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
+  //     // console.log(web3.utils.fromWei(await web3.eth.getBalance(rahat.address)));
+  //     console.log(
+  //       await rahat.projectBalance(projectIdHash, rahatAdmin.address)
+  //     );
+  //   });
+  // });
 
   describe("Cash Tracking Token", function () {
     it("Create tracking tokens", async function () {
