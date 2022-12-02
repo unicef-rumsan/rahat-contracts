@@ -15,9 +15,8 @@ import "../libraries/AbstractERC20Func.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/utils/Multicall.sol";
 
-contract Rahat is AccessControl, AbstractERC20Func, Multicall {
+contract Rahat is AccessControl, AbstractERC20Func {
   using Strings for uint256;
   using EnumerableSet for EnumerableSet.Bytes32Set;
   using EnumerableSet for EnumerableSet.AddressSet;

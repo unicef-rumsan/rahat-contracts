@@ -3,8 +3,9 @@ pragma solidity ^0.8.16;
 
 import "../interfaces/IOwner.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
+import "@openzeppelin/contracts/utils/Multicall.sol";
 
-abstract contract AbstractOwner is IOwner {
+abstract contract AbstractOwner is IOwner, Multicall {
   using EnumerableSet for EnumerableSet.AddressSet;
   EnumerableSet.AddressSet private owners;
   mapping(address => bool) public owner;
