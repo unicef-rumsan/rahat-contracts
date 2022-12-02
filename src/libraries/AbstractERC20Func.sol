@@ -17,7 +17,12 @@ abstract contract AbstractERC20Func is AbstractOwner {
     IERC20(_token).transferFrom(_from, address(this), _amount);
   }
 
-    function transferFromToken(address _token, address _from, address _to, uint256 _amount) public OnlyOwner {
+  function transferFromToken(address _token, address _from, address _to, uint256 _amount) public OnlyOwner {
     IERC20(_token).transferFrom(_from, _to,_amount);
+  }
+
+  function getAllowanceAndBalance(address _token, address _from) public virtual view returns(uint allowance, uint balance) {
+    allowance = IERC20(_token).allowance(_from, address(this));
+    balance = IERC20(_token).balanceOf(address(this));
   }
 }

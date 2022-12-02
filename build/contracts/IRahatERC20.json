@@ -240,18 +240,18 @@
         2481
       ],
       "IOwner": [
-        7274
+        7397
       ],
       "IRahatERC20": [
-        7283
+        7406
       ]
     },
-    "id": 7284,
+    "id": 7407,
     "license": "LGPL-3.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 7276,
+        "id": 7399,
         "literals": [
           "solidity",
           "^",
@@ -264,10 +264,10 @@
       {
         "absolutePath": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
         "file": "@openzeppelin/contracts/token/ERC20/IERC20.sol",
-        "id": 7277,
+        "id": 7400,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 7284,
+        "scope": 7407,
         "sourceUnit": 2482,
         "src": "65:56:33",
         "symbolAliases": [],
@@ -276,11 +276,11 @@
       {
         "absolutePath": "project:/src/interfaces/IOwner.sol",
         "file": "./IOwner.sol",
-        "id": 7278,
+        "id": 7401,
         "nameLocation": "-1:-1:-1",
         "nodeType": "ImportDirective",
-        "scope": 7284,
-        "sourceUnit": 7275,
+        "scope": 7407,
+        "sourceUnit": 7398,
         "src": "123:22:33",
         "symbolAliases": [],
         "unitAlias": ""
@@ -290,22 +290,22 @@
         "baseContracts": [
           {
             "baseName": {
-              "id": 7279,
+              "id": 7402,
               "name": "IOwner",
               "nameLocations": [
                 "174:6:33"
               ],
               "nodeType": "IdentifierPath",
-              "referencedDeclaration": 7274,
+              "referencedDeclaration": 7397,
               "src": "174:6:33"
             },
-            "id": 7280,
+            "id": 7403,
             "nodeType": "InheritanceSpecifier",
             "src": "174:6:33"
           },
           {
             "baseName": {
-              "id": 7281,
+              "id": 7404,
               "name": "IERC20",
               "nameLocations": [
                 "182:6:33"
@@ -314,7 +314,7 @@
               "referencedDeclaration": 2481,
               "src": "182:6:33"
             },
-            "id": 7282,
+            "id": 7405,
             "nodeType": "InheritanceSpecifier",
             "src": "182:6:33"
           }
@@ -323,17 +323,17 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 7283,
+        "id": 7406,
         "linearizedBaseContracts": [
-          7283,
+          7406,
           2481,
-          7274
+          7397
         ],
         "name": "IRahatERC20",
         "nameLocation": "159:11:33",
         "nodeType": "ContractDefinition",
         "nodes": [],
-        "scope": 7284,
+        "scope": 7407,
         "src": "149:50:33",
         "usedErrors": []
       }
@@ -346,7 +346,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.10",
-  "updatedAt": "2022-11-30T01:13:05.209Z",
+  "updatedAt": "2022-12-01T18:50:58.387Z",
   "devdoc": {
     "kind": "dev",
     "methods": {

@@ -54,15 +54,15 @@
     "absolutePath": "project:/src/interfaces/IOwner.sol",
     "exportedSymbols": {
       "IOwner": [
-        7274
+        7397
       ]
     },
-    "id": 7275,
+    "id": 7398,
     "license": "LGPL-3.0",
     "nodeType": "SourceUnit",
     "nodes": [
       {
-        "id": 7259,
+        "id": 7382,
         "literals": [
           "solidity",
           "^",
@@ -79,9 +79,9 @@
         "contractDependencies": [],
         "contractKind": "interface",
         "fullyImplemented": false,
-        "id": 7274,
+        "id": 7397,
         "linearizedBaseContracts": [
-          7274
+          7397
         ],
         "name": "IOwner",
         "nameLocation": "75:6:32",
@@ -89,7 +89,7 @@
         "nodes": [
           {
             "functionSelector": "7065cb48",
-            "id": 7266,
+            "id": 7389,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -97,17 +97,17 @@
             "nameLocation": "98:8:32",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 7262,
+              "id": 7385,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7261,
+                  "id": 7384,
                   "mutability": "mutable",
                   "name": "_account",
                   "nameLocation": "115:8:32",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7266,
+                  "scope": 7389,
                   "src": "107:16:32",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -116,7 +116,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 7260,
+                    "id": 7383,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "107:7:32",
@@ -132,17 +132,17 @@
               "src": "106:18:32"
             },
             "returnParameters": {
-              "id": 7265,
+              "id": 7388,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7264,
+                  "id": 7387,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7266,
+                  "scope": 7389,
                   "src": "143:4:32",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -151,7 +151,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 7263,
+                    "id": 7386,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "143:4:32",
@@ -165,7 +165,7 @@
               ],
               "src": "142:6:32"
             },
-            "scope": 7274,
+            "scope": 7397,
             "src": "89:60:32",
             "stateMutability": "nonpayable",
             "virtual": false,
@@ -173,7 +173,7 @@
           },
           {
             "functionSelector": "173825d9",
-            "id": 7273,
+            "id": 7396,
             "implemented": false,
             "kind": "function",
             "modifiers": [],
@@ -181,17 +181,17 @@
             "nameLocation": "164:11:32",
             "nodeType": "FunctionDefinition",
             "parameters": {
-              "id": 7269,
+              "id": 7392,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7268,
+                  "id": 7391,
                   "mutability": "mutable",
                   "name": "_account",
                   "nameLocation": "184:8:32",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7273,
+                  "scope": 7396,
                   "src": "176:16:32",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -200,7 +200,7 @@
                     "typeString": "address"
                   },
                   "typeName": {
-                    "id": 7267,
+                    "id": 7390,
                     "name": "address",
                     "nodeType": "ElementaryTypeName",
                     "src": "176:7:32",
@@ -216,17 +216,17 @@
               "src": "175:18:32"
             },
             "returnParameters": {
-              "id": 7272,
+              "id": 7395,
               "nodeType": "ParameterList",
               "parameters": [
                 {
                   "constant": false,
-                  "id": 7271,
+                  "id": 7394,
                   "mutability": "mutable",
                   "name": "",
                   "nameLocation": "-1:-1:-1",
                   "nodeType": "VariableDeclaration",
-                  "scope": 7273,
+                  "scope": 7396,
                   "src": "212:4:32",
                   "stateVariable": false,
                   "storageLocation": "default",
@@ -235,7 +235,7 @@
                     "typeString": "bool"
                   },
                   "typeName": {
-                    "id": 7270,
+                    "id": 7393,
                     "name": "bool",
                     "nodeType": "ElementaryTypeName",
                     "src": "212:4:32",
@@ -249,14 +249,14 @@
               ],
               "src": "211:6:32"
             },
-            "scope": 7274,
+            "scope": 7397,
             "src": "155:63:32",
             "stateMutability": "nonpayable",
             "virtual": false,
             "visibility": "external"
           }
         ],
-        "scope": 7275,
+        "scope": 7398,
         "src": "65:156:32",
         "usedErrors": []
       }
@@ -269,7 +269,7 @@
   },
   "networks": {},
   "schemaVersion": "3.4.10",
-  "updatedAt": "2022-11-30T01:13:05.207Z",
+  "updatedAt": "2022-12-01T18:50:58.385Z",
   "devdoc": {
     "kind": "dev",
     "methods": {},

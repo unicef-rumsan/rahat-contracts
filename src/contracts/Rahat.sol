@@ -51,6 +51,7 @@ contract Rahat is AccessControl, AbstractERC20Func, Multicall {
     address expectedSigner,
     address recoveredSigner
   );
+  event Received(address, uint);
 
   //event BalanceAdjusted(uint256 indexed phone, uint256 amount, string reason);
 
@@ -88,7 +89,7 @@ contract Rahat is AccessControl, AbstractERC20Func, Multicall {
   mapping(bytes32 => uint256) public totalProjectErc20Issued;
   mapping(bytes32 => uint256) public remainingProjectErc20Balances;
   mapping(bytes32 => EnumerableSet.AddressSet) projectMobilizers;
-  mapping(bytes32 => EnumerableSet.AddressSet) projectVendors;
+  EnumerableSet.AddressSet private projectVendors;
 
   mapping(address => uint256) public erc20IssuedBy;
 
@@ -108,15 +109,15 @@ contract Rahat is AccessControl, AbstractERC20Func, Multicall {
     RahatTriggerResponse _triggerResponse,
     address _admin
   ) {
-    _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
     _setupRole(DEFAULT_ADMIN_ROLE, _admin);
+    owner[_admin] = true;
     _setRoleAdmin(SERVER_ROLE, DEFAULT_ADMIN_ROLE);
     _setRoleAdmin(VENDOR_ROLE, DEFAULT_ADMIN_ROLE);
-    grantRole(SERVER_ROLE, msg.sender);
+    _setRoleAdmin(MANAGER_ROLE, DEFAULT_ADMIN_ROLE);
+    _setRoleAdmin(MOBILIZER_ROLE, DEFAULT_ADMIN_ROLE);
     erc20 = _erc20;
     registry = _registry;
     triggerResponse = _triggerResponse;
-    owner[_admin] = true;
   }
 
   function supportsInterface(bytes4 interfaceId)
@@ -189,7 +190,7 @@ contract Rahat is AccessControl, AbstractERC20Func, Multicall {
 
   /// @notice add vendors
   /// @param _account address of the new vendor
-  function addVendor(address _account) external OnlyAdmin returns (address) {
+  function addVendor(address payable _account) external OnlyAdmin returns (address) {
     RahatWallet vWallet;
     bytes32 idHash = findHash(_account);
     address vWalletAddress = registry.id2Address(idHash);
@@ -202,11 +203,20 @@ contract Rahat is AccessControl, AbstractERC20Func, Multicall {
     } 
     vWallet.addOwner(_account);
     grantRole(VENDOR_ROLE, _account);
+    projectVendors.add(_account);
+    if(_account.balance < 0.1 ether){
+      (bool success,) = _account.call{value: 0.2 ether}("");
+      require(success, "Rahat needs more ether.");
+    }
     return address(vWallet);
   }
 
   function isVendor(address _account) public view returns(bool){
     return hasRole(VENDOR_ROLE, _account);
+  }
+
+  function listVendors() public view returns(address[] memory){
+    return projectVendors.values();
   }
 
   /// @notice add vendors
@@ -454,8 +464,16 @@ contract Rahat is AccessControl, AbstractERC20Func, Multicall {
     totalProjectErc20Issued[_projectId] += _amount;
   }
 
-  function vendorBalance(address _vendorAddress) public view returns (address walletAddress, uint cashBalance, uint tokenBalance) {
+   function projectBalance(bytes32 _projectId, address _allowanceFrom) public view returns (uint totalBudget, uint cashAllowance, uint cashBalance, uint tokenBalance) {
+    cashAllowance = cashToken.allowance(address(_allowanceFrom), address(this));
+    cashBalance = cashToken.balanceOf(address(this));
+    tokenBalance = remainingProjectErc20Balances[_projectId];
+    totalBudget = totalProjectErc20Issued[_projectId];
+  }
+
+  function vendorBalance(address _vendorAddress) public view returns (address walletAddress, uint cashAllowance, uint cashBalance, uint tokenBalance) {
     walletAddress = registry.id2Address(findHash(_vendorAddress));
+    cashAllowance = cashToken.allowance(address(this), walletAddress);
     cashBalance = cashToken.balanceOf(walletAddress);
     tokenBalance = erc20.balanceOf(_vendorAddress);
   } 
@@ -494,4 +512,13 @@ contract Rahat is AccessControl, AbstractERC20Func, Multicall {
     }
     return sum;
   }
+
+  receive() external payable {
+      emit Received(msg.sender, msg.value);
+  }
+
+  function withdraw(address payable _to) public payable OnlyAdmin {
+        (bool sent,) = _to.call{value:address(this).balance}("");
+        require(sent, "Failed to send Ether");
+    }
 }

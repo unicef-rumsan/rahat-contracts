@@ -1,3 +1,4 @@
+const { web3 } = require("hardhat");
 const exceptions = require("./exceptions");
 const RahatDonor = artifacts.require("RahatDonor");
 const RahatRegistry = artifacts.require("RahatRegistry");
@@ -59,6 +60,29 @@ describe.only("------ Rahat Donor Tests ------", function () {
     await rahatTrigger.addAdmin(rahatTeam, { from: agency });
     await rahat.addAdmin(rahatTeam, { from: palika });
     await rahat.addServer(server, { from: palika });
+
+    await web3.eth.sendTransaction({
+      from: agency,
+      to: rahat.address,
+      value: web3.utils.toWei("5", "ether"),
+    });
+  });
+
+  describe.only("test", function () {
+    it("Create tracking tokens", async function () {
+      // const vAddr = "0x2e38580a0ea254895b3f28f3aa95221124c102df";
+      // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
+      // web3.eth.sendTransaction;
+      // await rahat.addVendor(vAddr, { from: palika });
+      // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
+      // console.log(web3.utils.fromWei(await web3.eth.getBalance(rahat.address)));
+      // await rahat.withdraw(vAddr, { from: palika });
+      // console.log(web3.utils.fromWei(await web3.eth.getBalance(vAddr)));
+      // console.log(web3.utils.fromWei(await web3.eth.getBalance(rahat.address)));
+      console.log(
+        await rahat.projectBalance(projectIdHash, rahatAdmin.address)
+      );
+    });
   });
 
   describe("Cash Tracking Token", function () {
@@ -285,7 +309,7 @@ describe.only("------ Rahat Donor Tests ------", function () {
       );
       await assert.equal(await cashToken.balanceOf(benWallet), claimAmt);
 
-      // const { walletAddress, cashBalance, tokenBalance } =
+      // const { walletAddress, cashAllowance, cashBalance, tokenBalance } =
       //   await rahat.vendorBalance(vendor1);
       // console.log(
       //   walletAddress,
